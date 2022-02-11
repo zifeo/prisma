@@ -1,6 +1,6 @@
 import { getTestClient } from '../../../../utils/getTestClient'
 
-test('exit-hook for sigint', async () => {
+test.skip('exit-hook for sigint', async () => {
   expect.assertions(2)
 
   const PrismaClient = await getTestClient()
