@@ -23,7 +23,8 @@ module.exports = {
   globalSetup: './_utils/globalSetup.js',
   snapshotSerializers: ['@prisma/internals/src/utils/jestSnapshotSerializer'],
   setupFilesAfterEnv: ['./_utils/setupFilesAfterEnv.ts'],
-  testTimeout: 10000,
+  testTimeout: 40000,
+  maxWorkers: 4,
   collectCoverage: process.env.CI ? true : false,
 
   /**
@@ -42,5 +43,5 @@ module.exports = {
    * if more than one worker is used.
    * See https://github.com/facebook/jest/issues/11617
    */
-  maxWorkers: 1,
+  // maxWorkers: 1,
 }

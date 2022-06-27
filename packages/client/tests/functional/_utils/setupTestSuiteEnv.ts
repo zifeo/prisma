@@ -3,12 +3,23 @@ import fs from 'fs-extra'
 import path from 'path'
 import { Script } from 'vm'
 
+import { Providers } from './providers'
 import { DbDrop } from '../../../../migrate/src/commands/DbDrop'
 import { DbPush } from '../../../../migrate/src/commands/DbPush'
 import type { TestSuiteConfig } from './getTestSuiteInfo'
 import { getTestSuiteFolderPath, getTestSuiteSchemaPath } from './getTestSuiteInfo'
 import type { TestSuiteMeta } from './setupTestSuiteMatrix'
+import { performance } from 'perf_hooks'
 
+const DB_NAME_VAR = 'PRISMA_DB_NAME'
+const dbURLs: Record<Providers, string> = {
+  sqlite: `file:${DB_NAME_VAR}.db`,
+  mongodb: process.env.TEST_MONGO_URI as string,
+  postgresql: process.env.TEST_POSTGRES_URI as string,
+  mysql: process.env.TEST_MYSQL_URI as string,
+  cockroachdb: process.env.TEST_COCKROACH_URI as string,
+  sqlserver: process.env.TEST_MSSQL_JDBC_URI_MIGRATE as string,
+}
 /**
  * Copies the necessary files for the generated test suite folder.
  * @param suiteMeta
@@ -132,11 +143,12 @@ export async function dropTestSuiteDatabase(
  * @returns
  */
 export function setupTestSuiteDbURI(suiteConfig: TestSuiteConfig) {
+  const provider = suiteConfig['provider'] as Providers
   // we reuse the original db url but postfix it with a random string
+  // TODO: use cuid
   const dbId = crypto.randomBytes(8).toString('hex')
-  const envVarName = `DATABASE_URI_${suiteConfig['provider']}`
-  const uriRegex = /(\w+:\/\/\w+:\w+@\w+:\d+\/)((?:\w|-)+)(.*)/g
-  const newURI = process.env[envVarName]?.replace(uriRegex, `$1$2${dbId}$3`)
+  const envVarName = `DATABASE_URI_${provider}`
+  const newURI = dbURLs[provider].replace(DB_NAME_VAR, dbId)
 
   return { [envVarName]: newURI }
 }
