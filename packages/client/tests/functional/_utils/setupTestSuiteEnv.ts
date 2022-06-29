@@ -1,15 +1,15 @@
 import crypto from 'crypto'
 import fs from 'fs-extra'
 import path from 'path'
+import { performance } from 'perf_hooks'
 import { Script } from 'vm'
 
-import { Providers } from './providers'
 import { DbDrop } from '../../../../migrate/src/commands/DbDrop'
 import { DbPush } from '../../../../migrate/src/commands/DbPush'
 import type { TestSuiteConfig } from './getTestSuiteInfo'
 import { getTestSuiteFolderPath, getTestSuiteSchemaPath } from './getTestSuiteInfo'
+import { Providers } from './providers'
 import type { TestSuiteMeta } from './setupTestSuiteMatrix'
-import { performance } from 'perf_hooks'
 
 const DB_NAME_VAR = 'PRISMA_DB_NAME'
 const dbURLs: Record<Providers, string> = {
@@ -97,7 +97,9 @@ export async function setupTestSuiteDatabase(
 
   try {
     const consoleInfoMock = jest.spyOn(console, 'info').mockImplementation()
+    const start = performance.now()
     await DbPush.new().parse(['--schema', schemaPath, '--force-reset', '--skip-generate'])
+    console.log(`db push ${performance.now() - start}`)
     consoleInfoMock.mockRestore()
   } catch (e) {
     errors.push(e as Error)

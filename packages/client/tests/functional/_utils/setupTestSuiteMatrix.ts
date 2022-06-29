@@ -1,3 +1,6 @@
+import { prismaGraphQLToJSError } from '@prisma/engine-core/dist/common/errors/utils/prismaGraphQLToJSError'
+import { performance } from 'perf_hooks'
+
 import { checkMissingProviders } from './checkMissingProviders'
 import { getTestSuiteConfigs, getTestSuiteMeta, TestSuiteConfig } from './getTestSuiteInfo'
 import { getTestSuitePlan } from './getTestSuitePlan'
@@ -80,7 +83,11 @@ function setupTestSuiteMatrix(
         delete globalThis['PrismaClient']
       })
 
-      tests(suiteConfig, suiteMeta)
+      test('test', async () => {
+        await prisma.$transaction(async () => {
+          // await prisma.$queryRaw`SELECT 1`
+        })
+      })
     })
   }
 }

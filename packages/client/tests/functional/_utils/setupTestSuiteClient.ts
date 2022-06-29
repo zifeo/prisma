@@ -1,5 +1,6 @@
 import { getClientEngineType, getConfig, getPlatform, parseEnvValue } from '@prisma/internals'
 import path from 'path'
+import { performance } from 'perf_hooks'
 
 import { generateClient } from '../../../src/generation/generateClient'
 import { getDMMF } from '../../../src/generation/getDMMF'

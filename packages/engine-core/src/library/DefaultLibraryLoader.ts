@@ -4,6 +4,7 @@ import { getNodeAPIName, getPlatform, Platform } from '@prisma/get-platform'
 import chalk from 'chalk'
 import fs from 'fs'
 import path from 'path'
+import { performance } from 'perf_hooks'
 
 import { EngineConfig } from '../common/Engine'
 import { PrismaClientInitializationError } from '../common/errors/PrismaClientInitializationError'

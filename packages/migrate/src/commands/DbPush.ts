@@ -13,6 +13,7 @@ import {
   protocolToConnectorType,
 } from '@prisma/internals'
 import chalk from 'chalk'
+import { performance } from 'perf_hooks'
 import prompt from 'prompts'
 
 import { Migrate } from '../Migrate'

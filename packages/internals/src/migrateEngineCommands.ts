@@ -2,6 +2,7 @@ import { BinaryType } from '@prisma/fetch-engine'
 import execa from 'execa'
 import fs from 'fs'
 import path from 'path'
+import { performance } from 'perf_hooks'
 import { promisify } from 'util'
 
 import { getSchemaDir } from './cli/getSchema'
@@ -122,12 +123,15 @@ export async function createDatabase(connectionString: string, cwd = process.cwd
   }
 
   try {
+    const start = performance.now()
     await execaCommand({
       connectionString,
       cwd,
       migrationEnginePath,
       engineCommandName: 'create-database',
     })
+
+    console.log(`execa create-db: ${performance.now() - start}`)
 
     return true
   } catch (_e) {

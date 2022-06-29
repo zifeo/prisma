@@ -1,7 +1,15 @@
 import type { DatabaseCredentials } from '@prisma/internals'
-import { canConnectToDatabase, createDatabase, getConfig, getSchema, getSchemaDir, uriToCredentials } from '@prisma/internals'
+import {
+  canConnectToDatabase,
+  createDatabase,
+  getConfig,
+  getSchema,
+  getSchemaDir,
+  uriToCredentials,
+} from '@prisma/internals'
 import chalk from 'chalk'
 import type execa from 'execa'
+import { performance } from 'perf_hooks'
 import prompt from 'prompts'
 
 export type MigrateAction = 'create' | 'apply' | 'unapply' | 'dev' | 'push'
@@ -131,7 +139,9 @@ export async function ensureDatabaseExists(action: MigrateAction, forceCreate = 
   }
   // forceCreate is always true in the codebase as of today
   if (forceCreate) {
+    const start = performance.now()
     if (await createDatabase(activeDatasource.url.value, schemaDir)) {
+      console.log(`create database: ${performance.now() - start}`)
       // URI parsing is not implemented for SQL server yet
       if (activeDatasource.provider === 'sqlserver') {
         return `SQL Server database created.\n`
