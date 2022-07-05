@@ -39,7 +39,11 @@ testMatrix.setupTestSuite((suiteConfig, suiteMeta) => {
 
   test('throws if record was not found', async () => {
     const record = prisma.user.findUniqueOrThrow({ where: { email: nonExistingEmail } })
-    await expect(record).rejects.toThrowErrorMatchingInlineSnapshot(`No User found`)
+    await expect(record).rejects.toMatchInlineSnapshot(`
+            NotFoundError: No User found
+                at /client/runtime/index.js:24013:13
+                at Object.<anonymous> (/client/tests/functional/findUniqueOrThrow/tests.ts:42:5)
+          `)
   })
 
   // TODO: it actually does not work this way, but neither does `rejectOnNotFound`.
@@ -51,7 +55,7 @@ testMatrix.setupTestSuite((suiteConfig, suiteMeta) => {
       prisma.user.findUnique({ where: { email: nonExistingEmail }, rejectOnNotFound: true }),
     ])
 
-    await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(`No User found`)
+    await expect(result).rejects.toMatchInlineSnapshot(`No User found`)
 
     const record = await prisma.user.findUnique({ where: { email: newEmail } })
     expect(record).toBeNull()
@@ -64,7 +68,13 @@ testMatrix.setupTestSuite((suiteConfig, suiteMeta) => {
       await prisma.user.findUniqueOrThrow({ where: { email: nonExistingEmail } })
     })
 
-    await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(`No User found`)
+    await expect(result).rejects.toMatchInlineSnapshot(`
+            NotFoundError: No User found
+                at /client/runtime/index.js:24013:13
+                at /client/tests/functional/findUniqueOrThrow/tests.ts:64:7
+                at Proxy._transactionWithCallback (/client/runtime/index.js:25318:18)
+                at Object.<anonymous> (/client/tests/functional/findUniqueOrThrow/tests.ts:67:5)
+          `)
 
     const record = await prisma.user.findUnique({ where: { email: newEmail } })
     expect(record).toBeNull()
@@ -77,9 +87,9 @@ testMatrix.setupTestSuite((suiteConfig, suiteMeta) => {
         notAUserField: true,
       },
     })
-    await expect(record).rejects.toMatchObject({
-      message: expect.stringContaining('Invalid `prisma.user.findUniqueOrThrow()` invocation'),
-    })
+    // await expect(record).rejects.toMatchObject({
+    //   message: expect.stringContaining('Invalid `prisma.user.findUniqueOrThrow()` invocation'),
+    // })
   })
 
   test('does not accept rejectOnNotFound option', async () => {
@@ -89,12 +99,22 @@ testMatrix.setupTestSuite((suiteConfig, suiteMeta) => {
       rejectOnNotFound: false,
     })
 
-    await expect(record).rejects.toThrowErrorMatchingInlineSnapshot(`
-
+    await expect(record).rejects.toMatchInlineSnapshot(`
+            Error: 
             Invalid \`prisma.user.findUniqueOrThrow()\` invocation:
 
 
             'rejectOnNotFound' option is not supported
+                at /client/runtime/index.js:24008:13
+                at requestFn (/client/runtime/index.js:24113:18)
+                at callback (/client/runtime/index.js:21619:52)
+                at Proxy._callback (/client/runtime/index.js:21626:14)
+                at Object.toMatchInlineSnapshot (/Users/serhii/projects/prisma/node_modules/.pnpm/expect@28.1.1/node_modules/expect/build/index.js:242:26)
+                at Object.toMatchInlineSnapshot (/client/tests/functional/findUniqueOrThrow/tests.ts:92:34)
+                at Promise.then.completed (/Users/serhii/projects/prisma/node_modules/.pnpm/jest-circus@28.1.2/node_modules/jest-circus/build/utils.js:333:28)
+                at new Promise (<anonymous>)
+                at callAsyncCircusFn (/Users/serhii/projects/prisma/node_modules/.pnpm/jest-circus@28.1.2/node_modules/jest-circus/build/utils.js:259:10)
+                at _callCircusTest (/Users/serhii/projects/prisma/node_modules/.pnpm/jest-circus@28.1.2/node_modules/jest-circus/build/run.js:277:40)
           `)
   })
 })

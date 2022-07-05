@@ -45,10 +45,20 @@ testMatrix.setupTestSuite(
               json: Prisma.DbNull,
             },
           }),
-        ).rejects.toThrowErrorMatchingInlineSnapshot(`
-                Argument json: Provided value Prisma.DbNull of type DbNull on prisma.createOneRequiredJsonField is not a JsonNullValueInput.
+        ).rejects.toMatchInlineSnapshot(`
+                Error: Argument json: Provided value Prisma.DbNull of type DbNull on prisma.createOneRequiredJsonField is not a JsonNullValueInput.
                 → Possible values: JsonNullValueInput.JsonNull
 
+                    at Document.validate (/client/runtime/index.js:22979:20)
+                    at PrismaClient.validate [as _executeRequest] (/client/runtime/index.js:25417:17)
+                    at _executeRequest (/client/runtime/index.js:25354:23)
+                    at consumer (/client/runtime/index.js:25358:76)
+                    at cb (/client/runtime/index.js:24563:12)
+                    at runInChildSpan (/client/runtime/index.js:25358:20)
+                    at AsyncResource.runInAsyncScope (node:async_hooks:202:9)
+                    at PrismaClient.runInAsyncScope [as _request] (/client/runtime/index.js:25357:86)
+                    at _request (/client/runtime/index.js:24100:65)
+                    at requestFn (/client/runtime/index.js:24113:18)
               `)
       })
     })
@@ -68,10 +78,20 @@ testMatrix.setupTestSuite(
               json: new Prisma.NullTypes.JsonNull(),
             },
           }),
-        ).rejects.toThrowErrorMatchingInlineSnapshot(`
-                Argument json: Provided value new Prisma.NullTypes.JsonNull() of type JsonNull on prisma.createOneRequiredJsonField is not a JsonNullValueInput.
+        ).rejects.toMatchInlineSnapshot(`
+                Error: Argument json: Provided value new Prisma.NullTypes.JsonNull() of type JsonNull on prisma.createOneRequiredJsonField is not a JsonNullValueInput.
                 → Possible values: JsonNullValueInput.JsonNull
 
+                    at Document.validate (/client/runtime/index.js:22979:20)
+                    at PrismaClient.validate [as _executeRequest] (/client/runtime/index.js:25417:17)
+                    at _executeRequest (/client/runtime/index.js:25354:23)
+                    at consumer (/client/runtime/index.js:25358:76)
+                    at cb (/client/runtime/index.js:24563:12)
+                    at runInChildSpan (/client/runtime/index.js:25358:20)
+                    at AsyncResource.runInAsyncScope (node:async_hooks:202:9)
+                    at PrismaClient.runInAsyncScope [as _request] (/client/runtime/index.js:25357:86)
+                    at _request (/client/runtime/index.js:24100:65)
+                    at requestFn (/client/runtime/index.js:24113:18)
               `)
       })
     })

@@ -118,7 +118,7 @@ module.exports = {
     return typeof value === 'string' || value instanceof Error
   },
   serialize(value) {
-    const message = typeof value === 'string' ? value : value instanceof Error ? value.message : ''
+    const message = typeof value === 'string' ? value : value instanceof Error ? value.stack : ''
 
     // order is important
     return pipe(

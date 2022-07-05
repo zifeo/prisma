@@ -56,9 +56,17 @@ testMatrix.setupTestSuite(({ provider }) => {
       await delay(6000)
     })
 
-    await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(
-      `Transaction API error: Transaction already closed: A commit cannot be executed on a closed transaction..`,
-    )
+    await expect(result).rejects.toMatchInlineSnapshot(`
+            Object {
+              clientVersion: 0.0.0,
+              error_code: P2028,
+              is_panic: false,
+              message: Transaction API error: Transaction already closed: A commit cannot be executed on a closed transaction..,
+              meta: Object {
+                error: Transaction already closed: A commit cannot be executed on a closed transaction..,
+              },
+            }
+          `)
 
     expect(await prisma.user.findMany()).toHaveLength(0)
   })
@@ -83,9 +91,17 @@ testMatrix.setupTestSuite(({ provider }) => {
       },
     )
 
-    await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(
-      `Transaction API error: Transaction already closed: A commit cannot be executed on a closed transaction..`,
-    )
+    await expect(result).rejects.toMatchInlineSnapshot(`
+            Object {
+              clientVersion: 0.0.0,
+              error_code: P2028,
+              is_panic: false,
+              message: Transaction API error: Transaction already closed: A commit cannot be executed on a closed transaction..,
+              meta: Object {
+                error: Transaction already closed: A commit cannot be executed on a closed transaction..,
+              },
+            }
+          `)
 
     expect(await prisma.user.findMany()).toHaveLength(0)
   })
@@ -104,7 +120,12 @@ testMatrix.setupTestSuite(({ provider }) => {
       throw new Error('you better rollback now')
     })
 
-    await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(`you better rollback now`)
+    await expect(result).rejects.toMatchInlineSnapshot(`
+            Error: you better rollback now
+                at /client/tests/functional/interactive-transactions/tests.ts:104:13
+                at Proxy._transactionWithCallback (/client/runtime/index.js:25318:18)
+                at Object.<anonymous> (/client/tests/functional/interactive-transactions/tests.ts:107:5)
+          `)
 
     const users = await prisma.user.findMany()
 
@@ -194,9 +215,15 @@ testMatrix.setupTestSuite(({ provider }) => {
       })
     })
 
-    await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(
-      `Transaction API error: Transaction already closed: A query cannot be executed on a closed transaction..`,
-    )
+    await expect(result).rejects.toMatchInlineSnapshot(`
+            Error: Transaction API error: Transaction already closed: A query cannot be executed on a closed transaction..
+                at RequestHandler.handleRequestError (/client/runtime/index.js:24453:13)
+                at RequestHandler.handleRequestError [as request] (/client/runtime/index.js:24435:12)
+                at PrismaClient._request (/client/runtime/index.js:25357:18)
+                at /client/tests/functional/interactive-transactions/tests.ts:190:7
+                at Proxy._transactionWithCallback (/client/runtime/index.js:25318:18)
+                at Object.<anonymous> (/client/tests/functional/interactive-transactions/tests.ts:197:5)
+          `)
 
     const users = await prisma.user.findMany()
 
@@ -444,7 +471,12 @@ testMatrix.setupTestSuite(({ provider }) => {
       throw new Error('rollback')
     })
 
-    await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(`rollback`)
+    await expect(result).rejects.toMatchInlineSnapshot(`
+            Error: rollback
+                at /client/tests/functional/interactive-transactions/tests.ts:444:13
+                at Proxy._transactionWithCallback (/client/runtime/index.js:25318:18)
+                at Object.<anonymous> (/client/tests/functional/interactive-transactions/tests.ts:447:5)
+          `)
 
     const users = await prisma.user.findMany()
 
@@ -475,7 +507,12 @@ testMatrix.setupTestSuite(({ provider }) => {
       throw new Error('rollback')
     })
 
-    await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(`rollback`)
+    await expect(result).rejects.toMatchInlineSnapshot(`
+            Error: rollback
+                at /client/tests/functional/interactive-transactions/tests.ts:475:13
+                at Proxy._transactionWithCallback (/client/runtime/index.js:25318:18)
+                at Object.<anonymous> (/client/tests/functional/interactive-transactions/tests.ts:478:5)
+          `)
 
     const users = await prisma.user.findMany()
 
@@ -508,7 +545,12 @@ testMatrix.setupTestSuite(({ provider }) => {
       throw new Error('rollback')
     })
 
-    await expect(result).rejects.toThrowErrorMatchingInlineSnapshot(`rollback`)
+    await expect(result).rejects.toMatchInlineSnapshot(`
+            Error: rollback
+                at /client/tests/functional/interactive-transactions/tests.ts:508:13
+                at Proxy._transactionWithCallback (/client/runtime/index.js:25318:18)
+                at Object.<anonymous> (/client/tests/functional/interactive-transactions/tests.ts:511:5)
+          `)
 
     const users = await prisma.user.findMany()
 
