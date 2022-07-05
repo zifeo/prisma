@@ -112,27 +112,7 @@ testMatrix.setupTestSuite(() => {
     } catch (err) {
       expect(err.message).toMatchInlineSnapshot(`
 
-        Invalid \`prisma.user.count()\` invocation:
-
-        {
-          select: {
-            _count: {
-              select: {
-        ?       _all?: true,
-        ?       email?: true,
-        ?       age?: true,
-        ?       name?: true,
-                posts: true,
-                ~~~~~
-        ?       id?: true
-              }
-            }
-          }
-        }
-
-
-        Unknown field \`posts\` for select statement on model UserCountAggregateOutputType. Available options are listed in green. Did you mean \`id\`?
-
+        Unknown field \`posts\` for select statement on model UserCountAggregateOutputType. Did you mean \`id\`?
       `)
     }
   })
