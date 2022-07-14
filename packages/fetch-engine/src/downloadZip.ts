@@ -10,6 +10,7 @@ import { promisify } from 'util'
 import zlib from 'zlib'
 
 import { getProxyAgent } from './getProxyAgent'
+import { overwriteFile } from './util'
 
 const debug = Debug('prisma:downloadZip')
 const del = promisify(rimraf)
@@ -113,12 +114,8 @@ export async function downloadZip(
       onFailedAttempt: (err) => debug(err),
     },
   )
-  // without removing the file first,
-  // macOS Gatekeeper can sometimes complain
-  // about incorrect binary signature and kill node process
-  // https://openradar.appspot.com/FB8914243
-  removeFileIfExists(target)
-  fs.copyFileSync(partial, target)
+
+  await overwriteFile(partial, target)
 
   // it's ok if the unlink fails
   try {
@@ -129,14 +126,4 @@ export async function downloadZip(
   }
 
   return result as DownloadResult
-}
-
-function removeFileIfExists(filePath: string) {
-  try {
-    fs.unlinkSync(filePath)
-  } catch (e) {
-    if (e.code !== 'ENOENT') {
-      throw e
-    }
-  }
 }
