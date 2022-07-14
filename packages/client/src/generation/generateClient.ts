@@ -275,7 +275,7 @@ export async function generateClient(options: GenerateClientOptions): Promise<vo
       // If the target doesn't exist yet, copy it
       if (!targetFileSize) {
         if (fs.existsSync(filePath)) {
-          await copyFile(filePath, target)
+          await overwriteFile(filePath, target)
           continue
         } else {
           throw new Error(`File at ${filePath} is required but was not present`)
@@ -284,7 +284,7 @@ export async function generateClient(options: GenerateClientOptions): Promise<vo
 
       // If target !== source size, they're definitely different, copy it
       if (targetFileSize && sourceFileSize && targetFileSize !== sourceFileSize) {
-        await copyFile(filePath, target)
+        await overwriteFile(filePath, target)
         continue
       }
       const binaryName =
@@ -298,7 +298,7 @@ export async function generateClient(options: GenerateClientOptions): Promise<vo
       if (sourceVersion && targetVersion && sourceVersion === targetVersion) {
         // skip
       } else {
-        await copyFile(filePath, target)
+        await overwriteFile(filePath, target)
       }
     }
   }
@@ -321,6 +321,25 @@ export async function generateClient(options: GenerateClientOptions): Promise<vo
 
   if (!fs.existsSync(proxyIndexBrowserJsPath)) {
     await copyFile(path.join(__dirname, '../../index-browser.js'), proxyIndexBrowserJsPath)
+  }
+}
+
+export async function overwriteFile(sourcePath: string, targetPath: string) {
+  // without removing the file first,
+  // macOS Gatekeeper can sometimes complain
+  // about incorrect binary signature and kill node process
+  // https://openradar.appspot.com/FB8914243
+  await removeFileIfExists(targetPath)
+  await fs.promises.copyFile(sourcePath, targetPath)
+}
+
+async function removeFileIfExists(filePath: string) {
+  try {
+    await fs.promises.unlink(filePath)
+  } catch (e) {
+    if (e.code !== 'ENOENT') {
+      throw e
+    }
   }
 }
 
