@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test-snapshots (provider=mongodb) example 1`] = `mongodb!!!`;
+
+exports[`test-snapshots (provider=postgresql) example 1`] = `postgresql!!!`;
+
+exports[`test-snapshots (provider=sqlite) example 1`] = `sqlite!!!`;
