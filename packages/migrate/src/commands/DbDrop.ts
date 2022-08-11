@@ -103,7 +103,7 @@ ${chalk.bold('Examples')}
         throw new DbNeedsForceError('drop')
       }
 
-      // TODO for mssql
+      // TODO for SQL Server
       const confirmation = await prompt({
         type: 'text',
         name: 'value',

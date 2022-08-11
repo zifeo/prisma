@@ -6,7 +6,7 @@ import { setupMSSQL } from '../../../../utils/setupMSSQL'
 
 const describeIf = (condition: boolean) => (condition ? describe : describe.skip)
 
-describeIf(!process.env.TEST_SKIP_MSSQL)('blog-env-mssql', () => {
+describeIf(!process.env.TEST_SKIP_MSSQL)('blog-env-sqlserver', () => {
   let prisma: any = null // Generated Client instance
   let PrismaHelpers: any = null
   const requests: any[] = []

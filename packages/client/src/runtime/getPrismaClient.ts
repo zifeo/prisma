@@ -43,7 +43,7 @@ import { RequestHandler } from './RequestHandler'
 import { clientVersion } from './utils/clientVersion'
 import { getOutputTypeName } from './utils/common'
 import { deserializeRawResults } from './utils/deserializeRawResults'
-import { mssqlPreparedStatement } from './utils/mssqlPreparedStatement'
+import { sqlserverPreparedStatement } from './utils/mssqlPreparedStatement'
 import { printJsonWithErrors } from './utils/printJsonErrors'
 import type { InstanceRejectOnNotFound, RejectOnNotFound } from './utils/rejectOnNotFound'
 import { getRejectOnNotFound } from './utils/rejectOnNotFound'
@@ -652,7 +652,7 @@ export function getPrismaClient(config: GetPrismaClientConfig) {
           }
 
           case 'sqlserver': {
-            queryString = mssqlPreparedStatement(query)
+            queryString = sqlserverPreparedStatement(query)
             parameters = {
               values: serializeRawParameters(values),
               __prismaRawParamaters__: true,
@@ -676,7 +676,7 @@ export function getPrismaClient(config: GetPrismaClientConfig) {
             checkAlter(queryString, query.values, 'prisma.$executeRaw(sql`<SQL>`)')
             break
           case 'sqlserver':
-            queryString = mssqlPreparedStatement(query.strings)
+            queryString = sqlserverPreparedStatement(query.strings)
             break
           default:
             throw new Error(`The ${this._activeProvider} provider does not support $executeRaw`)
@@ -823,7 +823,7 @@ Or read our docs at https://www.prisma.io/docs/concepts/components/prisma-client
           case 'sqlserver': {
             const queryInstance = sqlTemplateTag.sqltag(query as any, ...values)
 
-            queryString = mssqlPreparedStatement(queryInstance.strings)
+            queryString = sqlserverPreparedStatement(queryInstance.strings)
             parameters = {
               values: serializeRawParameters(queryInstance.values),
               __prismaRawParamaters__: true,
@@ -847,7 +847,7 @@ Or read our docs at https://www.prisma.io/docs/concepts/components/prisma-client
             queryString = query.text
             break
           case 'sqlserver':
-            queryString = mssqlPreparedStatement(query.strings)
+            queryString = sqlserverPreparedStatement(query.strings)
             break
           default: {
             throw new Error(`The ${this._activeProvider} provider does not support $queryRaw`)
