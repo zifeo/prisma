@@ -13,7 +13,7 @@ function getAllTestSuiteTypeChecks(fileNames: string[]) {
   const program = ts.createProgram(fileNames, {
     ...ts.convertCompilerOptionsFromJson(
       require('../../../../../tsconfig.build.regular.json').compilerOptions,
-      path.dirname(expect.getState().testPath),
+      path.dirname(expect.getState().testPath!),
     ).options,
     skipLibCheck: false,
     noEmit: true,

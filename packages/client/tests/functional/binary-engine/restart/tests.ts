@@ -1,13 +1,9 @@
 import { faker } from '@faker-js/faker'
-// @ts-ignore this is just for typechecks
-import type { PrismaClient } from '@prisma/client'
+import { newPrismaClient, type PrismaClient } from './_globals.generated'
 import { ClientEngineType, getClientEngineType } from '@prisma/internals'
 import { ChildProcess } from 'child_process'
 
-import { NewPrismaClient } from '../../_utils/types'
 import testMatrix from './_matrix'
-
-declare let newPrismaClient: NewPrismaClient<typeof PrismaClient>
 
 function waitForChildExit(child: ChildProcess): Promise<void> {
   return new Promise((resolve) => {

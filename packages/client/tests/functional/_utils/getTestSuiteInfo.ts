@@ -130,9 +130,8 @@ export function getTestSuiteSchema(suiteMeta: TestSuiteMeta, matrixOptions: Reco
  * Get metadata about the original test suite executed by jest.
  * @returns
  */
-export function getTestSuiteMeta() {
+export function getTestSuiteMeta(testPath: string) {
   const testsDir = path.join(path.dirname(__dirname), '/')
-  const testPath = expect.getState().testPath
   if (testPath === undefined) {
     throw new Error(`getTestSuiteMeta can be executed only within jest test`)
   }

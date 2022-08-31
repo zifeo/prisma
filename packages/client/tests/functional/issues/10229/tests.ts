@@ -1,9 +1,6 @@
 import { PrismaClientInitializationError } from '@prisma/engine-core'
-
+import { prisma } from './_globals.generated'
 import testMatrix from './_matrix'
-
-// @ts-ignore this is just for type checks
-declare let prisma: import('@prisma/client').PrismaClient
 
 // https://github.com/prisma/prisma/issues/10229
 testMatrix.setupTestSuite(

@@ -1,9 +1,5 @@
-// @ts-ignore
-import { PrismaClient } from '@prisma/client'
-
+import { prisma } from './_globals.generated'
 import testMatrix from './_matrix'
-
-declare let prisma: PrismaClient
 
 testMatrix.setupTestSuite(() => {
   beforeAll(async () => {

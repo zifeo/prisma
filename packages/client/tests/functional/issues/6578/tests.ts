@@ -1,17 +1,11 @@
-// @ts-ignore
-import { PrismaClient } from '@prisma/client'
-
 import { QueryEvent } from '../../../../src/runtime/getPrismaClient'
-import { NewPrismaClient } from '../../_utils/types'
+import { type PrismaClient, newPrismaClient } from './_globals.generated'
 import testMatrix from './_matrix'
-
-// @ts-ignore this is just for type checks
-declare let newPrismaClient: NewPrismaClient<typeof PrismaClient>
 
 // https://github.com/prisma/prisma/issues/6578
 testMatrix.setupTestSuite(
   ({ provider }) => {
-    let _prisma: ReturnType<typeof newPrismaClient>
+    let _prisma: PrismaClient
 
     beforeAll(() => {
       _prisma = newPrismaClient({

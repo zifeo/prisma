@@ -1,11 +1,6 @@
-// @ts-ignore
-import { PrismaClient } from '@prisma/client'
 import { ClientEngineType, getClientEngineType } from '@prisma/internals'
-
-import { NewPrismaClient } from '../../_utils/types'
+import { newPrismaClient } from './_globals.generated'
 import testMatrix from './_matrix'
-
-declare let newPrismaClient: NewPrismaClient<typeof PrismaClient>
 
 // https://github.com/prisma/prisma/issues/12507
 testMatrix.setupTestSuite(() => {

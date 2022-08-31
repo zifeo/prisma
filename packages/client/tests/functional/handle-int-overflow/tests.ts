@@ -1,7 +1,5 @@
 import testMatrix from './_matrix'
-
-// @ts-ignore
-declare let prisma: import('@prisma/client').PrismaClient
+import { prisma } from './_globals.generated'
 
 testMatrix.setupTestSuite(() => {
   test('integer overflow', async () => {

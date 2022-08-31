@@ -47,8 +47,13 @@ async function copyPreprocessed(from: string, to: string, suiteConfig: Record<st
   // we adjust the relative paths to work from the generated folder
   const contents = await fs.readFile(from, 'utf8')
   const newContents = contents
-    .replace(/'..\//g, "'../../../")
-    .replace(/'.\//g, "'../../")
+    .replace(/'\.\.\//g, "'../../../")
+    .replace(/'\.\/(.+?)'/g, (match, filePath) => {
+      if (filePath === '_globals.generated') {
+        return match
+      }
+      return `'../../${filePath}'`
+    })
     .replace(/\/\/\s*@ts-ignore.+/g, '')
     .replace(/\/\/\s*@ts-test-if:(.+)/g, (match, condition) => {
       if (!evaluateMagicComment(condition, suiteConfig)) {
@@ -76,22 +81,6 @@ function evaluateMagicComment(conditionFromComment: string, suiteConfig: Record<
     ...suiteConfig,
   })
   return Boolean(value)
-}
-
-/**
- * Write the generated test suite schema to the test suite folder.
- * @param suiteMeta
- * @param suiteConfig
- * @param schema
- */
-export async function setupTestSuiteSchema(
-  suiteMeta: TestSuiteMeta,
-  suiteConfig: NamedTestSuiteConfig,
-  schema: string,
-) {
-  const schemaPath = getTestSuiteSchemaPath(suiteMeta, suiteConfig)
-
-  await fs.writeFile(schemaPath, schema)
 }
 
 /**

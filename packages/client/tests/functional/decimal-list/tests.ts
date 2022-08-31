@@ -1,7 +1,5 @@
 import { setupTestSuiteMatrix } from '../_utils/setupTestSuiteMatrix'
-
-// @ts-ignore this is just for type checks
-declare let prisma: import('@prisma/client').PrismaClient
+import { prisma } from './_globals.generated'
 
 setupTestSuiteMatrix(
   () => {

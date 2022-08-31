@@ -3,6 +3,8 @@
 /generator-build
 /runtime
 /tests/memory/memory-report.html
+/tests/functional/**/_globals.generated.ts
+/tests/functional/**/.editor-types
 
 pnpm-lock.yaml
 *.tsbuildinfo

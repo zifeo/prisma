@@ -1,10 +1,7 @@
 import { faker } from '@faker-js/faker'
-// @ts-ignore
-import { PrismaClient } from '@prisma/client'
+import { prisma } from './_globals.generated'
 
 import testMatrix from './_matrix'
-
-declare const prisma: PrismaClient
 
 const name = faker.lorem.sentence()
 testMatrix.setupTestSuite(() => {

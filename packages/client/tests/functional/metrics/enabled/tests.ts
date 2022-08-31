@@ -1,11 +1,6 @@
-// @ts-ignore
-import type { PrismaClient } from '@prisma/client'
+import { prisma, newPrismaClient } from './_globals.generated'
 
-import { NewPrismaClient } from '../../_utils/types'
 import testMatrix from './_matrix'
-
-declare let prisma: PrismaClient
-declare let newPrismaClient: NewPrismaClient<typeof PrismaClient>
 
 testMatrix.setupTestSuite(({ provider }) => {
   describe('empty', () => {

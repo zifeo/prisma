@@ -1,9 +1,6 @@
 import { faker } from '@faker-js/faker'
-
+import { prisma } from './_globals.generated'
 import testMatrix from './_matrix'
-
-// @ts-ignore this is just for type checks
-declare let prisma: import('@prisma/client').PrismaClient
 
 const email = faker.internet.email()
 const title = faker.lorem.sentence()

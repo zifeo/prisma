@@ -43,7 +43,7 @@ function setupTestSuiteMatrix(
   options?: MatrixOptions,
 ) {
   const originalEnv = process.env
-  const suiteMeta = getTestSuiteMeta()
+  const suiteMeta = getTestSuiteMeta(expect.getState().testPath!)
   const suiteConfigs = getTestSuiteConfigs(suiteMeta)
   const testPlan = getTestSuitePlan(suiteMeta, suiteConfigs)
   checkMissingProviders({

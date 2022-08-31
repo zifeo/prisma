@@ -1,10 +1,7 @@
 // @ts-ignore
 import type { PrismaClient } from '@prisma/client'
-
-import { NewPrismaClient } from '../_utils/types'
+import { newPrismaClient } from './_globals.generated'
 import testMatrix from './_matrix'
-
-declare let newPrismaClient: NewPrismaClient<typeof PrismaClient>
 
 const TIMEOUT = 60_000
 

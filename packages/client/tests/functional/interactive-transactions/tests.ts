@@ -1,13 +1,6 @@
-// @ts-ignore
-import type { Prisma as PrismaNamespace, PrismaClient } from '@prisma/client'
 import { ClientEngineType, getClientEngineType } from '@prisma/internals'
-
-import { NewPrismaClient } from '../_utils/types'
+import { prisma, Prisma, newPrismaClient } from './_globals.generated'
 import testMatrix from './_matrix'
-
-declare let prisma: PrismaClient
-declare let Prisma: typeof PrismaNamespace
-declare let newPrismaClient: NewPrismaClient<typeof PrismaClient>
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 

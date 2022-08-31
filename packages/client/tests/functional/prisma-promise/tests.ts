@@ -1,10 +1,7 @@
 import { faker } from '@faker-js/faker'
-// @ts-ignore this is just for type checks
-import type { PrismaClient } from '@prisma/client'
+import { prisma } from './_globals.generated'
 
 import testMatrix from './_matrix'
-
-declare let prisma: PrismaClient
 
 testMatrix.setupTestSuite(({ provider }) => {
   const tests = [

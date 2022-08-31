@@ -3,11 +3,9 @@ import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks'
 import { Resource } from '@opentelemetry/resources'
 import { BasicTracerProvider, InMemorySpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
+import { prisma } from './_globals.generated'
 
 import testMatrix from './_matrix'
-
-// @ts-ignore this is just for type checks
-declare let prisma: import('@prisma/client').PrismaClient
 
 let inMemorySpanExporter: InMemorySpanExporter
 

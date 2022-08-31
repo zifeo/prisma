@@ -1,9 +1,5 @@
 import testMatrix from './_matrix'
-
-// @ts-ignore
-declare let prisma: import('@prisma/client').PrismaClient
-// @ts-ignore
-declare let Prisma: typeof import('@prisma/client').Prisma
+import { prisma, Prisma } from './_globals.generated'
 
 testMatrix.setupTestSuite(
   () => {

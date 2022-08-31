@@ -1,10 +1,5 @@
-// @ts-ignore
-import type { Prisma as PrismaNamespace, PrismaClient } from '@prisma/client'
-
+import { prisma, Prisma } from './_globals.generated'
 import testMatrix from './_matrix'
-
-declare let prisma: PrismaClient
-declare let Prisma: typeof PrismaNamespace
 
 // https://github.com/prisma/prisma/issues/11233
 testMatrix.setupTestSuite(

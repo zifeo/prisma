@@ -1,5 +1,6 @@
 import { getConfig, parseEnvValue } from '@prisma/internals'
 import path from 'path'
+import fs from 'fs/promises'
 
 import { generateClient } from '../../../src/generation/generateClient'
 import { getDMMF } from '../../../src/generation/getDMMF'
@@ -10,8 +11,18 @@ import {
   getTestSuiteSchema,
   getTestSuiteSchemaPath,
 } from './getTestSuiteInfo'
-import { setupTestSuiteDatabase, setupTestSuiteFiles, setupTestSuiteSchema } from './setupTestSuiteEnv'
+import { setupTestSuiteDatabase, setupTestSuiteFiles } from './setupTestSuiteEnv'
 import type { TestSuiteMeta } from './setupTestSuiteMatrix'
+
+type SetupTestSuiteClientOptions = {
+  suiteMeta: TestSuiteMeta
+  suiteConfig: NamedTestSuiteConfig
+  skipDb?: boolean
+  skipCopy?: boolean
+  schemaPath?: string
+  suiteFolderPath?: string
+  globalTypesOutputDir?: string
+}
 
 /**
  * Does the necessary setup to get a test suite client ready to run.
@@ -23,27 +34,28 @@ export async function setupTestSuiteClient({
   suiteMeta,
   suiteConfig,
   skipDb,
-}: {
-  suiteMeta: TestSuiteMeta
-  suiteConfig: NamedTestSuiteConfig
-  skipDb?: boolean
-}) {
-  const suiteFolderPath = getTestSuiteFolderPath(suiteMeta, suiteConfig)
+  skipCopy,
+  schemaPath = getTestSuiteSchemaPath(suiteMeta, suiteConfig),
+  suiteFolderPath = getTestSuiteFolderPath(suiteMeta, suiteConfig),
+  globalTypesOutputDir = suiteFolderPath,
+}: SetupTestSuiteClientOptions) {
   const previewFeatures = getTestSuitePreviewFeatures(suiteConfig.matrixOptions)
   const schema = await getTestSuiteSchema(suiteMeta, suiteConfig.matrixOptions)
   const dmmf = await getDMMF({ datamodel: schema, previewFeatures })
   const config = await getConfig({ datamodel: schema, ignoreEnvVarErrors: true })
   const generator = config.generators.find((g) => parseEnvValue(g.provider) === 'prisma-client-js')
 
-  await setupTestSuiteFiles(suiteMeta, suiteConfig)
-  await setupTestSuiteSchema(suiteMeta, suiteConfig, schema)
+  if (!skipCopy) {
+    await setupTestSuiteFiles(suiteMeta, suiteConfig)
+  }
+  await fs.writeFile(schemaPath, schema)
   if (!skipDb) {
     await setupTestSuiteDatabase(suiteMeta, suiteConfig)
   }
 
   await generateClient({
     datamodel: schema,
-    schemaPath: getTestSuiteSchemaPath(suiteMeta, suiteConfig),
+    schemaPath,
     binaryPaths: { libqueryEngine: {}, queryEngine: {} },
     datasources: config.datasources,
     outputDir: path.join(suiteFolderPath, 'node_modules/@prisma/client'),
@@ -64,5 +76,23 @@ export async function setupTestSuiteClient({
     dataProxy: !!process.env.DATA_PROXY,
   })
 
+  await fs.writeFile(
+    path.join(globalTypesOutputDir, '_globals.generated.ts'),
+    getGlobalTypesFileContents(suiteFolderPath),
+    'utf8',
+  )
+
   return require(path.join(suiteFolderPath, 'node_modules/@prisma/client'))
+}
+
+function getGlobalTypesFileContents(suiteFolderPath: string) {
+  return `
+import { Prisma, PrismaClient} from '${suiteFolderPath}/node_modules/@prisma/client'
+
+declare const prisma: PrismaClient;
+declare const newPrismaClient: (...args: ConstructorParameters<typeof PrismaClient>) => PrismaClient
+
+export { prisma, Prisma, newPrismaClient }
+export type { PrismaClient }
+`
 }
