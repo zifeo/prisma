@@ -386,7 +386,7 @@ export class IntrospectionEngine {
             debugStdin(err)
           })
 
-          byline(this.child.stderr).on('data', (data) => {
+          byline(this.child.stderr!).on('data', (data) => {
             const msg = String(data)
             this.messages.push(msg)
             debugStderr(msg)
@@ -403,7 +403,7 @@ export class IntrospectionEngine {
             }
           })
 
-          byline(this.child.stdout).on('data', (line) => {
+          byline(this.child.stdout!).on('data', (line) => {
             this.handleResponse(String(line))
           })
 
