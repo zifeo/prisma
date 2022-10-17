@@ -1148,7 +1148,7 @@ new PrismaClient({
         rootField = action
       }
 
-      let mapping
+      let mapping: DMMF.ModelMapping
       if (model !== undefined) {
         mapping = this._dmmf?.mappingsMap[model]
         if (mapping === undefined) {
