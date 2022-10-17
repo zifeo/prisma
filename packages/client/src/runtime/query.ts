@@ -248,7 +248,6 @@ ${fieldErrors.map((e) => this.printFieldError(e, missingItems, errorFormat === '
 
     const error = new PrismaClientValidationError(renderErrorStr(validationCallsite))
 
-    // @ts-ignore
     if (process.env.NODE_ENV !== 'production') {
       Object.defineProperty(error, 'render', {
         get: () => renderErrorStr,
@@ -861,7 +860,6 @@ export function selectionToFields({
         new Field({
           name,
           children: [],
-          // @ts-ignore
           error: {
             type: 'invalidFieldName',
             modelName: outputType.name,
@@ -992,7 +990,6 @@ export function selectionToFields({
                         },
                       }),
                     ],
-                    // @ts-ignore
                   }),
               ),
             )
