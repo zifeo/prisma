@@ -76,7 +76,6 @@ export type StopDeferred = {
 }
 
 const engines: BinaryEngine[] = []
-const socketPaths: string[] = []
 
 const MAX_STARTS = process.env.PRISMA_CLIENT_NO_RETRY ? 1 : 2
 const MAX_REQUEST_RETRIES = process.env.PRISMA_CLIENT_NO_RETRY ? 1 : 2
@@ -373,15 +372,15 @@ This probably happens, because you built Prisma Client on a different platform.
 Searched Locations:
 
 ${searchedLocations
-          .map((f) => {
-            let msg = `  ${f}`
-            if (process.env.DEBUG === 'node-engine-search-locations' && fs.existsSync(f)) {
-              const dir = fs.readdirSync(f)
-              msg += dir.map((d) => `    ${d}`).join('\n')
-            }
-            return msg
-          })
-          .join('\n' + (process.env.DEBUG === 'node-engine-search-locations' ? '\n' : ''))}\n`
+  .map((f) => {
+    let msg = `  ${f}`
+    if (process.env.DEBUG === 'node-engine-search-locations' && fs.existsSync(f)) {
+      const dir = fs.readdirSync(f)
+      msg += dir.map((d) => `    ${d}`).join('\n')
+    }
+    return msg
+  })
+  .join('\n' + (process.env.DEBUG === 'node-engine-search-locations' ? '\n' : ''))}\n`
       // The generator should always be there during normal usage
       if (this.generator) {
         // The user already added it, but it still doesn't work 🤷‍♀️
@@ -392,8 +391,8 @@ ${searchedLocations
         ) {
           errorText += `
 You already added the platform${this.generator.binaryTargets.length > 1 ? 's' : ''} ${this.generator.binaryTargets
-              .map((t) => `"${chalk.bold(t.value)}"`)
-              .join(', ')} to the "${chalk.underline('generator')}" block
+            .map((t) => `"${chalk.bold(t.value)}"`)
+            .join(', ')} to the "${chalk.underline('generator')}" block
 in the "schema.prisma" file as described in https://pris.ly/d/client-generator,
 but something went wrong. That's suboptimal.
 
@@ -1206,16 +1205,6 @@ function hookProcess(handler: string, exit = false) {
       engine.kill(handler)
     }
     engines.splice(0, engines.length)
-
-    if (socketPaths.length > 0) {
-      for (const socketPath of socketPaths) {
-        try {
-          fs.unlinkSync(socketPath)
-        } catch (e) {
-          //
-        }
-      }
-    }
 
     // only exit, if only we are listening
     // if there is another listener, that other listener is responsible
