@@ -13,7 +13,7 @@ testMatrix.setupTestSuite((suiteConfig, suiteMeta, clientMeta) => {
     await prisma.user.deleteMany()
   })
 
-  testIf(!clientMeta.dataProxy)('batched errors are serialized properly', async () => {
+  test('batched errors are serialized properly', async () => {
     const id = await prisma.user
       .create({
         data: {},
@@ -30,16 +30,22 @@ testMatrix.setupTestSuite((suiteConfig, suiteMeta, clientMeta) => {
     const foundToo = prisma.user.findUniqueOrThrow({ where: { id: id2 } })
     const result = await Promise.allSettled([found, foundToo])
     expect(result).toEqual([
-      { status: 'fulfilled', value: { id: id } },
+      { status: 'fulfilled', value: { id } },
       { status: 'fulfilled', value: { id: id2 } },
     ])
 
     await prisma.user.delete({ where: { id: id2 } })
 
+    const alsoFound = prisma.user.findUnique({ where: { id } })
     const notFound = prisma.user.findUniqueOrThrow({ where: { id: id2 } })
-    const newResult = await Promise.allSettled([found, notFound])
+    const notFoundEither = prisma.user.findUniqueOrThrow({ where: { id: id2 } })
+    const newResult = await Promise.allSettled([alsoFound, notFound, found, notFoundEither])
+
+    console.log(newResult)
     expect(newResult).toEqual([
-      { status: 'fulfilled', value: { id: id } },
+      { status: 'fulfilled', value: { id } },
+      { reason: new NotFoundError('No User found'), status: 'rejected' },
+      { status: 'fulfilled', value: { id } },
       { reason: new NotFoundError('No User found'), status: 'rejected' },
     ])
   })
