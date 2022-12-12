@@ -77,7 +77,7 @@ export class DataProxyEngine extends Engine {
 
     const [host, apiKey] = this.extractHostAndApiKey()
     this.remoteClientVersion = P.then(() => getClientVersion(this.config))
-    this.headers = { Authorization: `Bearer ${apiKey}`, 'prisma-capture-logs': true }
+    this.headers = { Authorization: `Bearer ${apiKey}`, 'prisma-capture-logs': 'true' }
     this.host = host
 
     debug('host', this.host)
