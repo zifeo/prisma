@@ -148,9 +148,9 @@ export class DataProxyEngine extends Engine {
   }
 
   request<T>({ query, headers = {}, transaction }: RequestOptions<DataProxyTxInfoPayload>) {
-    // TODO: `elapsed`?
     this.logEmitter.emit('query', { query })
 
+    // TODO: `elapsed`?
     return this.requestInternal<T>({ query, variables: {} }, headers, transaction)
   }
 
