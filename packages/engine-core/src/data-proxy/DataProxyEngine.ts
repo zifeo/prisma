@@ -149,6 +149,8 @@ export class DataProxyEngine extends Engine {
 
   request<T>({ query, headers = {}, transaction }: RequestOptions<DataProxyTxInfoPayload>) {
     // TODO: `elapsed`?
+    this.logEmitter.emit('query', { query })
+
     return this.requestInternal<T>({ query, variables: {} }, headers, transaction)
   }
 
@@ -158,6 +160,9 @@ export class DataProxyEngine extends Engine {
     transaction,
   }: RequestBatchOptions): Promise<BatchQueryEngineResult<T>[]> {
     const isTransaction = Boolean(transaction)
+    this.logEmitter.emit('query', {
+      query: `Batch${isTransaction ? ' in transaction' : ''} (${queries.length}):\n${queries.join('\n')}`,
+    })
 
     const body: QueryEngineBatchRequest = {
       batch: queries.map((query) => ({ query, variables: {} })),
