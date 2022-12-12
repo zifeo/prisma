@@ -61,7 +61,7 @@ export class DataProxyEngine extends Engine {
 
   private clientVersion: string
   readonly remoteClientVersion: Promise<string>
-  readonly headers: { Authorization: string; 'prisma-capture-logs': boolean }
+  readonly headers: { Authorization: string; 'prisma-capture-logs': string }
   readonly host: string
 
   constructor(config: EngineConfig) {
