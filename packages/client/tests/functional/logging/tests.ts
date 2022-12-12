@@ -1,12 +1,12 @@
 import { NewPrismaClient } from '../_utils/types'
 import testMatrix from './_matrix'
 // @ts-ignore
-import type { PrismaClient } from './node_modules/@prisma/client'
+import type { Prisma, PrismaClient } from './node_modules/@prisma/client'
 
 declare let newPrismaClient: NewPrismaClient<typeof PrismaClient>
 
 testMatrix.setupTestSuite(() => {
-  let client: PrismaClient
+  let client: PrismaClient<Prisma.PrismaClientOptions, 'query'>
 
   test('should log queries', async () => {
     client = newPrismaClient({
@@ -22,15 +22,13 @@ testMatrix.setupTestSuite(() => {
       ],
     })
 
-    const queryLogPromise = ((): Promise<any> =>
-      new Promise((resolve) => {
-        // @ts-expect-error
-        client.$on('query', (data) => {
-          if ('query' in data) {
-            resolve(data)
-          }
-        })
-      }))()
+    const queryLogPromise = new Promise<Prisma.QueryEvent>((resolve) => {
+      client.$on('query', (data) => {
+        if ('query' in data) {
+          resolve(data)
+        }
+      })
+    })
 
     await client.user.findMany()
 
