@@ -23,6 +23,7 @@ import {
   QueryEngineResultBatchQueryResult,
 } from '../common/types/QueryEngine'
 import type * as Tx from '../common/types/Transaction'
+import { getTraceParent } from '../tracing'
 import { DataProxyError } from './errors/DataProxyError'
 import { ForcedRetryError } from './errors/ForcedRetryError'
 import { InvalidDatasourceError } from './errors/InvalidDatasourceError'
@@ -46,6 +47,8 @@ type DataProxyTxInfoPayload = {
 
 type DataProxyTxInfo = Tx.Info<DataProxyTxInfoPayload>
 
+type LogResponse = { Kind: 'Query'; log: string } | { Kind: 'Trace' }
+
 export class DataProxyEngine extends Engine {
   private inlineSchema: string
   readonly inlineSchemaHash: string
@@ -56,7 +59,7 @@ export class DataProxyEngine extends Engine {
 
   private clientVersion: string
   readonly remoteClientVersion: Promise<string>
-  readonly headers: { Authorization: string }
+  readonly headers: { Authorization: string; 'prisma-capture-logs': boolean }
   readonly host: string
 
   constructor(config: EngineConfig) {
@@ -72,7 +75,7 @@ export class DataProxyEngine extends Engine {
 
     const [host, apiKey] = this.extractHostAndApiKey()
     this.remoteClientVersion = P.then(() => getClientVersion(this.config))
-    this.headers = { Authorization: `Bearer ${apiKey}` }
+    this.headers = { Authorization: `Bearer ${apiKey}`, 'prisma-capture-logs': true }
     this.host = host
 
     debug('host', this.host)
@@ -145,8 +148,6 @@ export class DataProxyEngine extends Engine {
   }
 
   request<T>({ query, headers = {}, transaction }: RequestOptions<DataProxyTxInfoPayload>) {
-    this.logEmitter.emit('query', { query })
-
     // TODO: `elapsed`?
     return this.requestInternal<T>({ query, variables: {} }, headers, transaction)
   }
@@ -157,9 +158,6 @@ export class DataProxyEngine extends Engine {
     transaction,
   }: RequestBatchOptions): Promise<BatchQueryEngineResult<T>[]> {
     const isTransaction = Boolean(transaction)
-    this.logEmitter.emit('query', {
-      query: `Batch${isTransaction ? ' in transaction' : ''} (${queries.length}):\n${queries.join('\n')}`,
-    })
 
     const body: QueryEngineBatchRequest = {
       batch: queries.map((query) => ({ query, variables: {} })),
@@ -194,9 +192,11 @@ export class DataProxyEngine extends Engine {
 
         logHttpCall(url)
 
+        console.log('MAKING DATA PROXY REQUEST')
+
         const response = await request(url, {
           method: 'POST',
-          headers: { ...runtimeHeadersToHttpHeaders(headers), ...this.headers },
+          headers: { ...runtimeHeadersToHttpHeaders(headers), ...this.headers, traceparent: getTraceParent({}) },
           body: JSON.stringify(body),
           clientVersion: this.clientVersion,
         })
@@ -210,6 +210,18 @@ export class DataProxyEngine extends Engine {
 
         const data = await response.json()
 
+        console.log('DATA PROXY RESPONSE', data)
+
+        const logs = data.logs as LogResponse[]
+        logs.forEach((log) => {
+          if (log.Kind === 'Query')
+            [
+              this.logEmitter.emit('query', {
+                message: log.log,
+              }),
+            ]
+        })
+
         // TODO: headers contain `x-elapsed` and it needs to be returned
 
         if (data.errors) {
@@ -220,7 +232,7 @@ export class DataProxyEngine extends Engine {
           }
         }
 
-        return data
+        return data.result
       },
     })
   }

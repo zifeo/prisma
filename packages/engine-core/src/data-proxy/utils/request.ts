@@ -7,7 +7,7 @@ import { RequestError } from '../errors/NetworkError'
 import { getJSRuntimeName } from './getJSRuntimeName'
 
 // our implementation handles less
-export type RequestOptions = O.Patch<{ headers?: { [k: string]: string }; body?: string }, RequestInit>
+export type RequestOptions = O.Patch<{ headers?: { [k: string]: any }; body?: string }, RequestInit>
 
 type Headers = Record<string, string | string[] | undefined>
 export type RequestResponse = O.Required<
@@ -102,7 +102,10 @@ async function nodeFetch(url: string, options: RequestOptions = {}): Promise<Req
     // we execute the https request and build a fetch response out of it
     const request = https.request(url, httpsOptions, (response) => {
       // eslint-disable-next-line prettier/prettier
-      const { statusCode, headers: { location } } = response
+      const {
+        statusCode,
+        headers: { location },
+      } = response
 
       if (statusCode! >= 301 && statusCode! <= 399 && location) {
         if (location.startsWith('http') === false) {
