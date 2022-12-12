@@ -7,7 +7,7 @@ import { RequestError } from '../errors/NetworkError'
 import { getJSRuntimeName } from './getJSRuntimeName'
 
 // our implementation handles less
-export type RequestOptions = O.Patch<{ headers?: { [k: string]: any }; body?: string }, RequestInit>
+export type RequestOptions = O.Patch<{ headers?: { [k: string]: string }; body?: string }, RequestInit>
 
 type Headers = Record<string, string | string[] | undefined>
 export type RequestResponse = O.Required<
