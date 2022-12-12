@@ -215,11 +215,9 @@ export class DataProxyEngine extends Engine {
         const logs = data.logs as LogResponse[]
         logs.forEach((log) => {
           if (log.Kind === 'Query')
-            [
-              this.logEmitter.emit('query', {
-                message: log.log,
-              }),
-            ]
+            this.logEmitter.emit('query', {
+              message: log.log,
+            })
         })
 
         // TODO: headers contain `x-elapsed` and it needs to be returned
