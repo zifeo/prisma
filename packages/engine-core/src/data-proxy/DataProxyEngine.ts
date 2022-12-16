@@ -61,7 +61,7 @@ export class DataProxyEngine extends Engine {
 
   private clientVersion: string
   readonly remoteClientVersion: Promise<string>
-  readonly headers: { Authorization: string; 'prisma-capture-logs': string }
+  readonly headers: { Authorization: string; 'X-capture-traces': string }
   readonly host: string
 
   constructor(config: EngineConfig) {
@@ -77,7 +77,7 @@ export class DataProxyEngine extends Engine {
 
     const [host, apiKey] = this.extractHostAndApiKey()
     this.remoteClientVersion = P.then(() => getClientVersion(this.config))
-    this.headers = { Authorization: `Bearer ${apiKey}`, 'prisma-capture-logs': 'true' }
+    this.headers = { Authorization: `Bearer ${apiKey}`, 'X-capture-traces': 'true' }
     this.host = host
 
     debug('host', this.host)
