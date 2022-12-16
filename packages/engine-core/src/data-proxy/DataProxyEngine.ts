@@ -47,9 +47,15 @@ type DataProxyTxInfoPayload = {
 
 type DataProxyTxInfo = Tx.Info<DataProxyTxInfoPayload>
 
-type LogResponse =
-  | { kind: 'Query'; log: { timestamp: string; query: string; params: string; duration: number; target: string } }
-  | { kind: 'Trace' }
+type TraceSpan = {
+  trace_id: string
+  span_id: string
+  parent_span_id: string
+  name: string
+  start_time: number[]
+  end_time: number[]
+  attributes?: Record<string, string>
+}
 
 export class DataProxyEngine extends Engine {
   private inlineSchema: string
@@ -219,10 +225,15 @@ export class DataProxyEngine extends Engine {
 
         console.log('DATA PROXY RESPONSE', data)
 
-        const logs = data.logs as LogResponse[]
-        logs.forEach((log) => {
-          if (log.kind === 'Query') this.logEmitter.emit('query', log.log)
-        })
+        if (data.traces) {
+          const traces = data.traces as TraceSpan[]
+          for (const trace of traces) {
+            const query = trace.attributes?.['db.statement']
+            if (query) {
+              this.logEmitter.emit('query', query)
+            }
+          }
+        }
 
         // TODO: headers contain `x-elapsed` and it needs to be returned
 
