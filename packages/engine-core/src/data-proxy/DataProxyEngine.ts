@@ -205,8 +205,6 @@ export class DataProxyEngine extends Engine {
 
         logHttpCall(url)
 
-        console.log('MAKING DATA PROXY REQUEST')
-
         // TODO: The default traceparent passed in headers doesn't have the sampling
         // flag set, so it results in the traces not being collected. Here we remove the client's
         // implicit `00-10-10-00` traceparent to make the engine generate a new trace id
@@ -238,8 +236,6 @@ export class DataProxyEngine extends Engine {
         await this.handleError(e)
 
         const data = await response.json()
-
-        console.log('DATA PROXY RESPONSE', data)
 
         if (data.extensions?.traces) {
           const traces = data.extensions.traces as TraceSpan[]
