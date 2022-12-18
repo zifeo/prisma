@@ -231,7 +231,7 @@ export class DataProxyEngine extends Engine {
           for (const trace of traces) {
             const query = trace.attributes?.['db.statement']
             if (query) {
-              this.logEmitter.emit('query', query)
+              this.logEmitter.emit('query', { query })
             }
           }
         }
