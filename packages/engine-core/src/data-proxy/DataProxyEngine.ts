@@ -221,13 +221,12 @@ export class DataProxyEngine extends Engine {
         const e = await responseToError(response, this.clientVersion)
         await this.handleError(e)
 
-        let data = await response.json()
+        const data = await response.json()
 
         console.log('DATA PROXY RESPONSE', data)
 
-        if (data.traces) {
-          const traces = data.traces as TraceSpan[]
-          data = data.result
+        if (data.extensions?.traces) {
+          const traces = data.extensions.traces as TraceSpan[]
 
           for (const trace of traces) {
             const query = trace.attributes?.['db.statement']
