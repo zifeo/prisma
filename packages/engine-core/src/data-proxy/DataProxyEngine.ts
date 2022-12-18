@@ -207,9 +207,25 @@ export class DataProxyEngine extends Engine {
 
         console.log('MAKING DATA PROXY REQUEST')
 
+        // TODO: The default traceparent passed in headers doesn't have the sampling
+        // flag set, so it results in the traces not being collected. Here we remove the client's
+        // implicit `00-10-10-00` traceparent to make the engine generate a new trace id
+        // associated with this request instead.
+        //
+        // Things to take care of before the PR is ready:
+        //   * We must not do this if tracing is enabled.
+        //   * We must ensure the sampling flag is always set if logging is enabled
+        //     (i.e. the traceparent must end with `-01`).
+        //   * Do we even need the default traceparent when tracing is disabled in client?
+        //     Maybe we could not generate it in the first place instead of deleting it here.
+        delete headers.traceparent
+
         const response = await request(url, {
           method: 'POST',
-          headers: { ...runtimeHeadersToHttpHeaders(headers), ...this.headers, traceparent: getTraceParent({}) },
+          headers: {
+            ...runtimeHeadersToHttpHeaders(headers),
+            ...this.headers,
+          },
           body: JSON.stringify(body),
           clientVersion: this.clientVersion,
         })
