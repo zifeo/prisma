@@ -17,12 +17,14 @@ import { prismaGraphQLToJSError } from '../common/errors/utils/prismaGraphQLToJS
 import { EventEmitter } from '../common/types/Events'
 import { EngineMetricsOptions, Metrics, MetricsOptionsJson, MetricsOptionsPrometheus } from '../common/types/Metrics'
 import {
+  EngineSpan,
   QueryEngineBatchRequest,
   QueryEngineRequestHeaders,
   QueryEngineResult,
   QueryEngineResultBatchQueryResult,
 } from '../common/types/QueryEngine'
 import type * as Tx from '../common/types/Transaction'
+import { createSpan, getTraceParent, getTracingConfig, TracingConfig } from '../tracing'
 import { DataProxyError } from './errors/DataProxyError'
 import { ForcedRetryError } from './errors/ForcedRetryError'
 import { InvalidDatasourceError } from './errors/InvalidDatasourceError'
@@ -46,14 +48,40 @@ type DataProxyTxInfoPayload = {
 
 type DataProxyTxInfo = Tx.Info<DataProxyTxInfoPayload>
 
-type TraceSpan = {
-  trace_id: string
-  span_id: string
-  parent_span_id: string
-  name: string
-  start_time: number[]
-  end_time: number[]
-  attributes?: Record<string, string>
+type DataProxyExtensions = {
+  logs?: any[]
+  traces?: EngineSpan[]
+}
+
+type DataProxyHeaders = {
+  Authorization: string
+  'X-capture-traces'?: string
+  traceparent?: string
+}
+
+class DataProxyHeaderBuilder {
+  readonly apiKey: string
+  readonly tracingConfig: TracingConfig
+
+  constructor({ apiKey, tracingConfig }: { apiKey: string; tracingConfig: TracingConfig }) {
+    this.apiKey = apiKey
+    this.tracingConfig = tracingConfig
+  }
+
+  build(): DataProxyHeaders {
+    const values: string[] = []
+
+    if (this.tracingConfig.enabled) {
+      values.push('tracing')
+    }
+
+    // TODO - pickup on what events have been subscribed to
+    return {
+      Authorization: `Bearer ${this.apiKey}`,
+      'X-capture-traces': values.join(','),
+      ...(this.tracingConfig.enabled ? { traceparent: getTraceParent({}) } : {}),
+    }
+  }
 }
 
 export class DataProxyEngine extends Engine {
@@ -66,8 +94,8 @@ export class DataProxyEngine extends Engine {
 
   private clientVersion: string
   readonly remoteClientVersion: Promise<string>
-  readonly headers: { Authorization: string; 'X-capture-traces': string }
   readonly host: string
+  readonly headerBuilder: DataProxyHeaderBuilder
 
   constructor(config: EngineConfig) {
     super()
@@ -81,9 +109,14 @@ export class DataProxyEngine extends Engine {
     this.logEmitter = config.logEmitter
 
     const [host, apiKey] = this.extractHostAndApiKey()
-    this.remoteClientVersion = P.then(() => getClientVersion(this.config))
-    this.headers = { Authorization: `Bearer ${apiKey}`, 'X-capture-traces': 'true' }
     this.host = host
+
+    this.headerBuilder = new DataProxyHeaderBuilder({
+      apiKey,
+      tracingConfig: getTracingConfig(this.config.previewFeatures || []),
+    })
+
+    this.remoteClientVersion = P.then(() => getClientVersion(this.config))
 
     debug('host', this.host)
   }
@@ -133,7 +166,7 @@ export class DataProxyEngine extends Engine {
   private async uploadSchema() {
     const response = await request(await this.url('schema'), {
       method: 'PUT',
-      headers: this.headers,
+      headers: this.headerBuilder.build(),
       body: this.inlineSchema,
       clientVersion: this.clientVersion,
     })
@@ -201,27 +234,15 @@ export class DataProxyEngine extends Engine {
       actionGerund: 'querying',
       callback: async ({ logHttpCall }) => {
         const url = itx ? `${itx.payload.endpoint}/graphql` : await this.url('graphql')
+        const tracingConfig = getTracingConfig(this.config.previewFeatures || [])
 
         logHttpCall(url)
-
-        // TODO: The default traceparent passed in headers doesn't have the sampling
-        // flag set, so it results in the traces not being collected. Here we remove the client's
-        // implicit `00-10-10-00` traceparent to make the engine generate a new trace id
-        // associated with this request instead.
-        //
-        // Things to take care of before the PR is ready:
-        //   * We must not do this if tracing is enabled.
-        //   * We must ensure the sampling flag is always set if logging is enabled
-        //     (i.e. the traceparent must end with `-01`).
-        //   * Do we even need the default traceparent when tracing is disabled in client?
-        //     Maybe we could not generate it in the first place instead of deleting it here.
-        delete headers.traceparent
 
         const response = await request(url, {
           method: 'POST',
           headers: {
             ...runtimeHeadersToHttpHeaders(headers),
-            ...this.headers,
+            ...this.headerBuilder.build(),
           },
           body: JSON.stringify(body),
           clientVersion: this.clientVersion,
@@ -235,16 +256,18 @@ export class DataProxyEngine extends Engine {
         await this.handleError(e)
 
         const data = await response.json()
+        const extensions = data.extensions as DataProxyExtensions
 
-        if (data.extensions?.traces) {
-          const traces = data.extensions.traces as TraceSpan[]
+        if (extensions?.logs?.length) {
+          extensions.logs.forEach((log) => {
+            // TODO - We dont know the shape of this yet
+            // https://prisma-company.slack.com/archives/C03Q6P81L6B/p1671543588480499
+            this.logEmitter.emit(log.type, log.log)
+          })
+        }
 
-          for (const trace of traces) {
-            const query = trace.attributes?.['db.statement']
-            if (query) {
-              this.logEmitter.emit('query', { query })
-            }
-          }
+        if (extensions?.traces?.length && tracingConfig.enabled) {
+          void createSpan({ span: true, spans: extensions.traces })
         }
 
         // TODO: headers contain `x-elapsed` and it needs to be returned
@@ -295,7 +318,7 @@ export class DataProxyEngine extends Engine {
 
           const response = await request(url, {
             method: 'POST',
-            headers: { ...runtimeHeadersToHttpHeaders(headers), ...this.headers },
+            headers: { ...runtimeHeadersToHttpHeaders(headers), ...this.headerBuilder.build() },
             body,
             clientVersion: this.clientVersion,
           })
@@ -315,7 +338,7 @@ export class DataProxyEngine extends Engine {
 
           const response = await request(url, {
             method: 'POST',
-            headers: { ...runtimeHeadersToHttpHeaders(headers), ...this.headers },
+            headers: { ...runtimeHeadersToHttpHeaders(headers), ...this.headerBuilder.build() },
             clientVersion: this.clientVersion,
           })
 
