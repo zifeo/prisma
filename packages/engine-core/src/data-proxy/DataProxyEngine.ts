@@ -68,7 +68,7 @@ class DataProxyHeaderBuilder {
     this.tracingConfig = tracingConfig
   }
 
-  build(): DataProxyHeaders {
+  build({ existingHeaders = {} }: { existingHeaders?: Record<string, string | undefined> } = {}): DataProxyHeaders {
     const values: string[] = []
 
     if (this.tracingConfig.enabled) {
@@ -77,6 +77,7 @@ class DataProxyHeaderBuilder {
 
     // TODO - pickup on what events have been subscribed to
     return {
+      ...existingHeaders,
       Authorization: `Bearer ${this.apiKey}`,
       'X-capture-traces': values.join(','),
       ...(this.tracingConfig.enabled ? { traceparent: getTraceParent({}) } : {}),
@@ -240,10 +241,7 @@ export class DataProxyEngine extends Engine {
 
         const response = await request(url, {
           method: 'POST',
-          headers: {
-            ...runtimeHeadersToHttpHeaders(headers),
-            ...this.headerBuilder.build(),
-          },
+          headers: this.headerBuilder.build({ existingHeaders: runtimeHeadersToHttpHeaders(headers) }),
           body: JSON.stringify(body),
           clientVersion: this.clientVersion,
         })
@@ -318,7 +316,7 @@ export class DataProxyEngine extends Engine {
 
           const response = await request(url, {
             method: 'POST',
-            headers: { ...runtimeHeadersToHttpHeaders(headers), ...this.headerBuilder.build() },
+            headers: this.headerBuilder.build({ existingHeaders: runtimeHeadersToHttpHeaders(headers) }),
             body,
             clientVersion: this.clientVersion,
           })
@@ -338,7 +336,7 @@ export class DataProxyEngine extends Engine {
 
           const response = await request(url, {
             method: 'POST',
-            headers: { ...runtimeHeadersToHttpHeaders(headers), ...this.headerBuilder.build() },
+            headers: this.headerBuilder.build({ existingHeaders: runtimeHeadersToHttpHeaders(headers) }),
             clientVersion: this.clientVersion,
           })
 
