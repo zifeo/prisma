@@ -62,10 +62,24 @@ type DataProxyHeaders = {
 class DataProxyHeaderBuilder {
   readonly apiKey: string
   readonly tracingConfig: TracingConfig
+  readonly logLevel: EngineConfig['logLevel']
+  readonly logQueries: boolean | undefined
 
-  constructor({ apiKey, tracingConfig }: { apiKey: string; tracingConfig: TracingConfig }) {
+  constructor({
+    apiKey,
+    tracingConfig,
+    logLevel,
+    logQueries,
+  }: {
+    apiKey: string
+    tracingConfig: TracingConfig
+    logLevel: EngineConfig['logLevel']
+    logQueries: boolean | undefined
+  }) {
     this.apiKey = apiKey
     this.tracingConfig = tracingConfig
+    this.logLevel = logLevel
+    this.logQueries = logQueries
   }
 
   build({ existingHeaders = {} }: { existingHeaders?: Record<string, string | undefined> } = {}): DataProxyHeaders {
@@ -75,12 +89,19 @@ class DataProxyHeaderBuilder {
       values.push('tracing')
     }
 
-    // TODO - pickup on what events have been subscribed to
+    if (this.logLevel) {
+      values.push(this.logLevel)
+    }
+
+    if (this.logQueries) {
+      values.push('query')
+    }
+
     return {
       ...existingHeaders,
       Authorization: `Bearer ${this.apiKey}`,
       'X-capture-traces': values.join(','),
-      ...(this.tracingConfig.enabled ? { traceparent: getTraceParent({}) } : {}),
+      ...(this.tracingConfig.enabled ? { traceparent: existingHeaders.traceparent || getTraceParent({}) } : {}),
     }
   }
 }
@@ -115,6 +136,8 @@ export class DataProxyEngine extends Engine {
     this.headerBuilder = new DataProxyHeaderBuilder({
       apiKey,
       tracingConfig: getTracingConfig(this.config.previewFeatures || []),
+      logLevel: config.logLevel,
+      logQueries: config.logQueries,
     })
 
     this.remoteClientVersion = P.then(() => getClientVersion(this.config))
