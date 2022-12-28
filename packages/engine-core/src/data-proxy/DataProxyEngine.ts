@@ -13,6 +13,7 @@ import type {
 } from '../common/Engine'
 import { Engine } from '../common/Engine'
 import { PrismaClientUnknownRequestError } from '../common/errors/PrismaClientUnknownRequestError'
+import { LogLevel } from '../common/errors/utils/log'
 import { prismaGraphQLToJSError } from '../common/errors/utils/prismaGraphQLToJSError'
 import { EventEmitter } from '../common/types/Events'
 import { EngineMetricsOptions, Metrics, MetricsOptionsJson, MetricsOptionsPrometheus } from '../common/types/Metrics'
@@ -48,14 +49,22 @@ type DataProxyTxInfoPayload = {
 
 type DataProxyTxInfo = Tx.Info<DataProxyTxInfoPayload>
 
+type DataProxyLog = {
+  span_id: string
+  name: string
+  level: LogLevel
+  timestamp: [number, number]
+  attributes: Record<string, unknown>
+}
+
 type DataProxyExtensions = {
-  logs?: any[]
+  logs?: DataProxyLog[]
   traces?: EngineSpan[]
 }
 
 type DataProxyHeaders = {
   Authorization: string
-  'X-capture-traces'?: string
+  'X-capture-telemetry'?: string
   traceparent?: string
 }
 
@@ -97,10 +106,14 @@ class DataProxyHeaderBuilder {
       values.push('query')
     }
 
+    if (!this.tracingConfig.enabled) {
+      delete existingHeaders.traceparent
+    }
+
     return {
       ...existingHeaders,
       Authorization: `Bearer ${this.apiKey}`,
-      'X-capture-traces': values.join(','),
+      'X-capture-telemetry': values.join(','),
       ...(this.tracingConfig.enabled ? { traceparent: existingHeaders.traceparent || getTraceParent({}) } : {}),
     }
   }
@@ -212,8 +225,6 @@ export class DataProxyEngine extends Engine {
   }
 
   request<T>({ query, headers = {}, transaction }: RequestOptions<DataProxyTxInfoPayload>) {
-    this.logEmitter.emit('query', { query })
-
     // TODO: `elapsed`?
     return this.requestInternal<T>({ query, variables: {} }, headers, transaction)
   }
@@ -224,9 +235,6 @@ export class DataProxyEngine extends Engine {
     transaction,
   }: RequestBatchOptions): Promise<BatchQueryEngineResult<T>[]> {
     const isTransaction = Boolean(transaction)
-    this.logEmitter.emit('query', {
-      query: `Batch${isTransaction ? ' in transaction' : ''} (${queries.length}):\n${queries.join('\n')}`,
-    })
 
     const body: QueryEngineBatchRequest = {
       batch: queries.map((query) => ({ query, variables: {} })),
@@ -281,9 +289,23 @@ export class DataProxyEngine extends Engine {
 
         if (extensions?.logs?.length) {
           extensions.logs.forEach((log) => {
-            // TODO - We dont know the shape of this yet
-            // https://prisma-company.slack.com/archives/C03Q6P81L6B/p1671543588480499
-            this.logEmitter.emit(log.type, log.log)
+            switch (log.level) {
+              case 'debug':
+              case 'error':
+              case 'trace':
+              case 'warn':
+              case 'info':
+                // TODO these are propgated into the response.errors key
+                break
+              case 'query':
+                this.logEmitter.emit('query', {
+                  query: log.name,
+                  // timestamp: log.timestamp
+                  // params: log.params
+                  // duration: log.duration
+                  // target: log.target
+                })
+            }
           })
         }
 
