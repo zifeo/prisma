@@ -297,14 +297,25 @@ export class DataProxyEngine extends Engine {
               case 'info':
                 // TODO these are propgated into the response.errors key
                 break
-              case 'query':
+              case 'query': {
+                let dbQuery = log.name
+                if (!tracingConfig.enabled) {
+                  // The engine uses tracing to consilidate logs
+                  // - and so we should strip the generated traceparent
+                  // - if tracing is disabled.
+                  // Example query: 'SELECT /* traceparent=00-123-0-01 */'
+                  const [query] = dbQuery.split('/* traceparent')
+                  dbQuery = query
+                }
+
                 this.logEmitter.emit('query', {
-                  query: log.name,
+                  query: dbQuery,
                   // timestamp: log.timestamp
                   // params: log.params
                   // duration: log.duration
                   // target: log.target
                 })
+              }
             }
           })
         }
