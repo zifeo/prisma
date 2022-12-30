@@ -240,7 +240,7 @@ importers:
       '@prisma/instrumentation': workspace:*
       '@prisma/internals': workspace:*
       '@prisma/migrate': workspace:*
-      '@prisma/mini-proxy': 0.6.0
+      '@prisma/mini-proxy': 0.6.1
       '@swc-node/register': 1.5.4
       '@swc/core': 1.3.14
       '@swc/jest': 0.2.24
@@ -322,7 +322,7 @@ importers:
       '@prisma/instrumentation': link:../instrumentation
       '@prisma/internals': link:../internals
       '@prisma/migrate': link:../migrate
-      '@prisma/mini-proxy': 0.6.0
+      '@prisma/mini-proxy': 0.6.1
       '@swc-node/register': 1.5.4_ldaqumno46ke76prz5kcgkjhhy
       '@swc/core': 1.3.14
       '@swc/jest': 0.2.24_@swc+core@1.3.14
@@ -3236,8 +3236,8 @@ packages:
   /@prisma/engines-version/4.9.0-8.log-capture-improvements-c2d0876355bc9103b77721edc74c886b51446aab:
     resolution: {integrity: sha512-CX2BNUK3z0Bs7bOPcn38kSnLBMT5kkqUICTLYXm8+kL7k/glzlhU6pBS9dlAlzocyjlm8luWhZZ9EmG9SZdxgQ==}
 
-  /@prisma/mini-proxy/0.6.0:
-    resolution: {integrity: sha512-2yaljwnfcwZpjCyAwfFPgAKyvsNlrqYAYTn+DX42sYc6PZxIFSvDKbVjxYQu17J2jj7VGI3Iy8U38d961Nkh8A==}
+  /@prisma/mini-proxy/0.6.1:
+    resolution: {integrity: sha512-U2VY2YSlj39xOBLe136K/HJ/UXqjSTm84kfT412+VC48VJzTVYWxswAWNZ6pD6rYkO8JuYCPFJKa9pMfnkvHlA==}
     engines: {node: '>=14.17'}
     hasBin: true
     dev: true
