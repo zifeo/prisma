@@ -5,7 +5,7 @@ import type { Prisma, PrismaClient } from './node_modules/@prisma/client'
 
 declare let newPrismaClient: NewPrismaClient<typeof PrismaClient>
 
-testMatrix.setupTestSuite(() => {
+testMatrix.setupTestSuite((_suiteConfig, _suiteMeta, clientMeta) => {
   let client: PrismaClient<Prisma.PrismaClientOptions, 'query'>
 
   test('should log queries', async () => {
@@ -13,10 +13,6 @@ testMatrix.setupTestSuite(() => {
       log: [
         {
           emit: 'event',
-          level: 'query',
-        },
-        {
-          emit: 'stdout',
           level: 'query',
         },
       ],
@@ -33,11 +29,22 @@ testMatrix.setupTestSuite(() => {
     await client.user.findMany()
 
     const queryLogEvents = await queryLogPromise
-    expect(queryLogEvents).toHaveProperty('timestamp')
     expect(queryLogEvents).toHaveProperty('query')
-    expect(queryLogEvents).toHaveProperty('params')
-    expect(queryLogEvents).toHaveProperty('duration')
-    expect(queryLogEvents).toHaveProperty('target')
-    expect(queryLogEvents).toHaveProperty('query')
+
+    if (_suiteConfig.provider === 'mongodb') {
+      expect(queryLogEvents.query).toContain('db.User.findMany')
+    } else {
+      expect(queryLogEvents.query).toContain('SELECT')
+    }
+
+    if (!clientMeta.dataProxy) {
+      expect(queryLogEvents).toHaveProperty('timestamp')
+      expect(queryLogEvents).toHaveProperty('params')
+      expect(queryLogEvents).toHaveProperty('duration')
+      expect(queryLogEvents).toHaveProperty('target')
+      expect(queryLogEvents).toHaveProperty('query')
+    }
+
+    await client.$disconnect()
   })
 })
