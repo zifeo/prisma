@@ -300,9 +300,9 @@ export class DataProxyEngine extends Engine {
               case 'query': {
                 let dbQuery = log.name
                 if (!tracingConfig.enabled) {
-                  // The engine uses tracing to consilidate logs
-                  // - and so we should strip the generated traceparent
-                  // - if tracing is disabled.
+                  // The engine uses tracing to consolidate logs
+                  //  - and so we should strip the generated traceparent
+                  //  - if tracing is disabled.
                   // Example query: 'SELECT /* traceparent=00-123-0-01 */'
                   const [query] = dbQuery.split('/* traceparent')
                   dbQuery = query
