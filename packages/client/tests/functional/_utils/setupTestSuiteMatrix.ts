@@ -121,16 +121,7 @@ function setupTestSuiteMatrix(
         if (!options?.skipDb) {
           const datasourceInfo = globalThis['datasourceInfo']
           process.env[datasourceInfo.envVarName] = datasourceInfo.databaseUrl
-          try {
-            await dropTestSuiteDatabase(suiteMeta, suiteConfig)
-          } catch (error) {
-            // We dont need to throw anything here
-            // - sometimes in dev the DB is being used elsewhere
-            // - 'ERROR: database "foobar" is being accessed by other users'
-            // - seeming that this is a 'afterAll' - all the tests have passed
-            // - so let's just log this error.
-            console.log(error)
-          }
+          await dropTestSuiteDatabase(suiteMeta, suiteConfig)
         }
         process.env = originalEnv
         delete globalThis['datasourceInfo']
