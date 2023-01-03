@@ -1,3 +1,5 @@
+import { faker } from '@faker-js/faker'
+
 import { NewPrismaClient } from '../_utils/types'
 import testMatrix from './_matrix'
 // @ts-ignore
@@ -8,7 +10,7 @@ declare let newPrismaClient: NewPrismaClient<typeof PrismaClient>
 testMatrix.setupTestSuite((_suiteConfig, _suiteMeta, clientMeta) => {
   let client: PrismaClient<Prisma.PrismaClientOptions, 'query'>
 
-  test('should log queries', async () => {
+  test('should log queries on a method call', async () => {
     client = newPrismaClient({
       log: [
         {
@@ -45,5 +47,42 @@ testMatrix.setupTestSuite((_suiteConfig, _suiteMeta, clientMeta) => {
     }
 
     await client.$disconnect()
+  })
+
+  test('should log queries inside a ITX', async () => {
+    client = newPrismaClient({
+      log: [
+        {
+          emit: 'event',
+          level: 'query',
+        },
+      ],
+    })
+
+    const didlog = new Promise((resolve) => {
+      client.$on('query', (data) => {
+        if ('query' in data) {
+          resolve(data)
+        }
+      })
+    })
+
+    await client.$transaction(async (tx) => {
+      const id = faker.random.numeric()
+
+      await tx.user.create({
+        data: {
+          id,
+        },
+      })
+
+      return tx.user.findMany({
+        where: {
+          id,
+        },
+      })
+    })
+
+    expect(await didlog).toEqual(true)
   })
 })
