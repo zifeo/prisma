@@ -73,22 +73,26 @@ class DataProxyHeaderBuilder {
   readonly tracingConfig: TracingConfig
   readonly logLevel: EngineConfig['logLevel']
   readonly logQueries: boolean | undefined
+  readonly engine: DataProxyEngine
 
   constructor({
     apiKey,
     tracingConfig,
     logLevel,
     logQueries,
+    engine,
   }: {
     apiKey: string
     tracingConfig: TracingConfig
     logLevel: EngineConfig['logLevel']
     logQueries: boolean | undefined
+    engine: DataProxyEngine
   }) {
     this.apiKey = apiKey
     this.tracingConfig = tracingConfig
     this.logLevel = logLevel
     this.logQueries = logQueries
+    this.engine = engine
   }
 
   build({ existingHeaders = {} }: { existingHeaders?: Record<string, string | undefined> } = {}): DataProxyHeaders {
@@ -110,12 +114,16 @@ class DataProxyHeaderBuilder {
       delete existingHeaders.traceparent
     }
 
-    return {
+    const headers = {
       ...existingHeaders,
       Authorization: `Bearer ${this.apiKey}`,
       'X-capture-telemetry': values.join(','),
       ...(this.tracingConfig.enabled ? { traceparent: existingHeaders.traceparent || getTraceParent({}) } : {}),
     }
+
+    this.engine.setHeaders(headers)
+
+    return headers
   }
 }
 
@@ -131,6 +139,7 @@ export class DataProxyEngine extends Engine {
   readonly remoteClientVersion: Promise<string>
   readonly host: string
   readonly headerBuilder: DataProxyHeaderBuilder
+  public headers: DataProxyHeaders
 
   constructor(config: EngineConfig) {
     super()
@@ -151,7 +160,10 @@ export class DataProxyEngine extends Engine {
       tracingConfig: getTracingConfig(this.config.previewFeatures || []),
       logLevel: config.logLevel,
       logQueries: config.logQueries,
+      engine: this,
     })
+
+    this.headers = this.headerBuilder.build()
 
     this.remoteClientVersion = P.then(() => getClientVersion(this.config))
 
@@ -161,6 +173,10 @@ export class DataProxyEngine extends Engine {
   version() {
     // QE is remote, we don't need to know the exact commit SHA
     return 'unknown'
+  }
+
+  setHeaders(headers: DataProxyHeaders) {
+    this.headers = headers
   }
 
   async start() {}
