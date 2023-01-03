@@ -54,7 +54,7 @@ type DataProxyLog = {
   name: string
   level: LogLevel
   timestamp: [number, number]
-  attributes: Record<string, unknown>
+  attributes: Record<string, unknown> & { duration_ms: number }
 }
 
 type DataProxyExtensions = {
@@ -310,10 +310,10 @@ export class DataProxyEngine extends Engine {
 
                 this.logEmitter.emit('query', {
                   query: dbQuery,
-                  // timestamp: log.timestamp
-                  // params: log.params
-                  // duration: log.duration
-                  // target: log.target
+                  timestamp: log.timestamp,
+                  duration: log.attributes.duration_ms,
+                  // params: log.params - Missing
+                  // target: log.target - Missing
                 })
               }
             }

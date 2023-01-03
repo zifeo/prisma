@@ -30,19 +30,18 @@ testMatrix.setupTestSuite((_suiteConfig, _suiteMeta, clientMeta) => {
 
     const queryLogEvents = await queryLogPromise
     expect(queryLogEvents).toHaveProperty('query')
+    expect(queryLogEvents).toHaveProperty('duration')
+    expect(queryLogEvents).toHaveProperty('timestamp')
 
     if (_suiteConfig.provider === 'mongodb') {
-      expect(queryLogEvents.query).toContain('db.User.findMany')
+      expect(queryLogEvents.query).toContain('db.User.aggregate')
     } else {
       expect(queryLogEvents.query).toContain('SELECT')
     }
 
     if (!clientMeta.dataProxy) {
-      expect(queryLogEvents).toHaveProperty('timestamp')
       expect(queryLogEvents).toHaveProperty('params')
-      expect(queryLogEvents).toHaveProperty('duration')
       expect(queryLogEvents).toHaveProperty('target')
-      expect(queryLogEvents).toHaveProperty('query')
     }
 
     await client.$disconnect()
