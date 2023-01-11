@@ -49,7 +49,7 @@
     "has-yarn": "2.1.0",
     "indent-string": "4.0.0",
     "log-update": "4.0.0",
-    "mariadb": "3.0.1",
+    "mariadb": "3.0.2",
     "mongoose": "^6.5.0",
     "mssql": "9.0.1",
     "pg": "8.8.0",
