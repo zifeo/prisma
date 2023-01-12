@@ -102,4 +102,58 @@ testMatrix.setupTestSuite((suiteConfig, _suiteMeta, clientMeta) => {
       expect(logs[2].query).toContain('SELECT')
     }
   })
+
+  test('should log parallel queries inside a ITX', async () => {
+    client = newPrismaClient({
+      log: [
+        {
+          emit: 'event',
+          level: 'query',
+        },
+      ],
+    })
+
+    const queryLogs = new Promise<Prisma.QueryEvent[]>((resolve) => {
+      const logs: Prisma.QueryEvent[] = []
+
+      client.$on('query', (data) => {
+        console.log(data)
+        if ('query' in data) {
+          logs.push(data)
+
+          if (logs.length === 2) {
+            resolve(logs)
+          }
+        }
+      })
+    })
+
+    await client.$transaction(async (tx) => {
+      const id = suiteConfig.provider === 'mongodb' ? faker.database.mongodbObjectId() : faker.random.numeric()
+
+      await Promise.all([
+        tx.user.findMany({
+          where: {
+            id,
+          },
+        }),
+        tx.user.findMany({
+          where: {
+            id,
+          },
+        }),
+      ])
+    })
+
+    const logs = await queryLogs
+    expect(logs).toHaveLength(2)
+
+    if (suiteConfig.provider === 'mongodb') {
+      expect(logs[0].query).toContain('User.aggregate')
+      expect(logs[0].query).toContain('User.aggregate')
+    } else {
+      expect(logs[0].query).toContain('SELECT')
+      expect(logs[2].query).toContain('SELECT')
+    }
+  })
 })
